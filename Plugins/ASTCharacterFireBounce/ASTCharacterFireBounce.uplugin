@@ -1,0 +1,17 @@
+{
+  "FileVersion": 3,
+  "Version": 1,
+  "VersionName": "0.1",
+  "FriendlyName": "AST Character Fire Bounce",
+  "Description": "Camera-facing character material bounce from physical AST fire lights.",
+  "Category": "Rendering",
+  "EnabledByDefault": true,
+  "CanContainContent": false,
+  "Modules": [
+    {
+      "Name": "ASTCharacterFireBounce",
+      "Type": "Runtime",
+      "LoadingPhase": "Default"
+    }
+  ]
+}
