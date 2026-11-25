@@ -69,13 +69,18 @@ void UASTCharacterFireBounceSubsystem::Tick(float DeltaTime)
                 It->ComponentHasTag(OwnedLightTag))Sources.Add(*It);
     }
     APlayerController* PC=World->GetFirstPlayerController();
-    if(!PC||!PC->IsLocalController()||!PC->PlayerCameraManager)return;
+    if(!PC||!PC->IsLocalController()||!PC->PlayerCameraManager)
+    {
+        for(auto& Pair:Receivers)
+            if(auto* Mesh=Pair.Key.Get())Write(Mesh,FVector::ZeroVector,FVector::ForwardVector);
+        Receivers.Reset();return;
+    }
     const FVector Toward=-PC->PlayerCameraManager->GetCameraRotation().Vector();
     TSet<TWeakObjectPtr<USkinnedMeshComponent>> Seen;
     for(TActorIterator<APawn> It(World);It;++It)
     {
         APawn* Pawn=*It;
-        if(!Pawn||!Pawn->IsPlayerControlled())continue;
+        if(!Pawn||(!Pawn->IsPlayerControlled()&&!Pawn->GetPlayerState()))continue;
         TArray<USkinnedMeshComponent*> Meshes;
         Pawn->GetComponents<USkinnedMeshComponent>(Meshes);
         for(auto* Mesh:Meshes)
@@ -116,9 +121,11 @@ void UASTCharacterFireBounceSubsystem::Tick(float DeltaTime)
             if(Peak>MaxEnergy)Sum*=MaxEnergy/Peak;
             const FVector Direction=Weighted.IsNearlyZero()?Toward:Weighted.GetSafeNormal();
             FReceiver& State=Receivers.FindOrAdd(Key);
-            const FVector NextColor=FMath::VInterpTo(State.Color,Sum,Dt,14.f);
+            FVector NextColor=FMath::VInterpTo(State.Color,Sum,Dt,14.f);
+            if(Sum.IsNearlyZero()&&NextColor.GetMax()<.001)NextColor=FVector::ZeroVector;
             const FVector NextDir=FMath::VInterpTo(State.Direction,Direction,Dt,18.f).GetSafeNormal();
-            if(!State.bWritten||!NextColor.Equals(State.Color,.0005)||!NextDir.Equals(State.Direction,.002))
+            if(!State.bWritten||!NextColor.Equals(State.Color,.0005)||!NextDir.Equals(State.Direction,.002)||
+                (NextColor.IsZero()&&!State.Color.IsZero()))
             {
                 Write(Mesh,NextColor,NextDir);
                 State.bWritten=true;
