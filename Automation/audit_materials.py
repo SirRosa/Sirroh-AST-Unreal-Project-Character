@@ -12,7 +12,8 @@ try:
             row["inputs"][str(p)]={"class":n.get_class().get_name() if n else None,"name":n.get_name() if n else None,"output":E.get_material_property_input_node_output_name(m,p) if n else None}
         for method in ("get_scalar_parameter_names","get_vector_parameter_names"):
             row["params"].extend(str(x) for x in getattr(E,method)(m))
-        for n in u.get_objects_with_outer(m, True):
+        for n in u.ObjectIterator(u.MaterialExpression):
+            if n.get_outer() != m: continue
             if isinstance(n,(u.MaterialExpressionScalarParameter,u.MaterialExpressionVectorParameter)):
                 if n.get_editor_property("use_custom_primitive_data"):
                     row.setdefault("cpd",[]).append([str(n.get_editor_property("parameter_name")),n.get_editor_property("primitive_data_index")])
