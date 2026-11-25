@@ -19,6 +19,8 @@ private:
     {
         FVector Color = FVector::ZeroVector;
         FVector Direction = FVector::ForwardVector;
+        FVector WrittenColor = FVector::ZeroVector;
+        FVector WrittenDirection = FVector::ForwardVector;
         bool bWritten = false;
     };
     float ScanDebt = 1.f;
